@@ -146,10 +146,39 @@ namespace pairing_heap_csharp_tests
                 }
             };
 
+        public static TheoryData<(TestAction, int, int)[]> UpdateItemTestData =>
+            new TheoryData<(TestAction, int, int)[]>
+            {
+                new []
+                {
+                    (TestAction.Insert, 1, 1),
+                    (TestAction.Insert, 2, 2),
+                    (TestAction.Insert, 3, 3),
+                    (TestAction.UpdateKeyValue, 2, 5)
+                },
+                new []
+                {
+                    (TestAction.Insert, 1, 5),
+                    (TestAction.Insert, 2, 10),
+                    (TestAction.Insert, 3, 15),
+                    (TestAction.UpdateKeyValue, 2, 1)
+                },
+                new []
+                {
+                    (TestAction.Insert, 1, 5),
+                    (TestAction.Insert, 2, 10),
+                    (TestAction.Insert, 3, 20),
+                    (TestAction.Insert, 4, 30),
+                    (TestAction.ExtractMin, 0, 0),
+                    (TestAction.UpdateKeyValue, 3, 1)
+                },
+            };
+
         [Theory]
         [MemberData(nameof(InOrderInsertTestData))]
         [MemberData(nameof(ReverseOrderInsertTestData))]
         [MemberData(nameof(InsertExtractInsertTestData))]
+        [MemberData(nameof(UpdateItemTestData))]
         public void PriorityQueue_ShouldMaintainMinOrder((TestAction action, int id, int priority)[] testActions)
         {
             // Arrange
@@ -177,9 +206,14 @@ namespace pairing_heap_csharp_tests
                 }
             }
 
+            var list = new List<TestTask>();
+            while (heap.Count > 0)
+            {
+                list.Add(heap.ExtractMin());
+            }
+
             // Assert
-            var toList = heap.ToList();
-            toList.OrderBy(n => n.Item.Priority).SequenceEqual(toList).ShouldBeTrue();
+            list.OrderBy(n => n.Priority).SequenceEqual(list).ShouldBeTrue();
         }
 
         [Fact]
@@ -321,6 +355,44 @@ namespace pairing_heap_csharp_tests
                 () => extracted.ShouldBe(task),
                 () => extracted.Priority.ShouldBe(1)
             );
+        }
+
+        [Fact]
+        public void ExamineMin_OnEmptyHeap_ShouldThrow()
+        {
+            // Arrange, Act
+            var heap = new PairingHeap<TestTask>();
+
+            // Assert
+            Should.Throw<InvalidOperationException>(() => heap.ExamineMin());
+        }
+
+        [Fact]
+        public void ExamineMin_OnPopulatedHeap_ShouldReturnMinimalItem()
+        {
+            // Arrange
+            var heap = new PairingHeap<TestTask>((a, b) => a.Priority.CompareTo(b.Priority));
+
+            var task1 = new TestTask()
+            {
+                Id = 1,
+                Priority = 5
+            };
+
+            var task2 = new TestTask()
+            {
+                Id = 2,
+                Priority = 1
+            };
+
+            heap.Insert(task1);
+            heap.Insert(task2);
+
+            // Act
+            var min = heap.ExamineMin();
+
+            // Assert
+            min.ShouldBe(task2);
         }
 
         class TestTask

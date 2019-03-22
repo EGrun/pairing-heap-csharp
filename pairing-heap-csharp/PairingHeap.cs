@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace pairing_heap_csharp
 {
@@ -176,6 +174,7 @@ namespace pairing_heap_csharp
             {
                 throw new InvalidOperationException("The heap is empty.");
             }
+
             return _head.Item;
         }
 
