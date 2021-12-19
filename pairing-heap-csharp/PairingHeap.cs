@@ -107,39 +107,30 @@ namespace pairing_heap_csharp
 
         private PairingNode<T> Extract(PairingNode<T> node)
         {
-            var children = new List<PairingNode<T>>();
+            if (node.Child is null)
+                return null;
+
+            PairingNode<T> result = null;
 
             var n = node.Child;
             while (!object.ReferenceEquals(n, null))
             {
+                if (n.Sibling is null)
+                    return Link(result, n);
+
                 var pair = n.Sibling;
                 n.Parent = null;
                 n.Sibling = null;
-                if (object.ReferenceEquals(pair, null))
-                {
-                    children.Add(n);
-                    break;
-                }
 
                 var next = pair.Sibling;
                 pair.Parent = null;
                 pair.Sibling = null;
-                children.Add(Link(n, pair));
+                result = Link(result, Link(n, pair));
+
                 n = next;
             }
 
-            if (children.Count == 0)
-            {
-                return null;
-            }
-
-            var root = children[0];
-            for (var i = 1; i < children.Count; ++i)
-            {
-                root = Link(root, children[i]);
-            }
-
-            return root;
+            return result;
         }
 
         public int Count
